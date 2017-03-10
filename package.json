@@ -1,0 +1,21 @@
+{
+  "name": "pushy-react-native",
+  "version": "1.0.0",
+  "description": "The official Pushy SDK for React Native apps.",
+  "main": "lib/Pushy.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pushy-me/pushy-react-native.git"
+  },
+  "author": "Pushy <support@pushy.me>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/pushy-me/pushy-react-native/issues"
+  },
+  "homepage": "https://github.com/pushy-me/pushy-react-native#readme",
+  "dependencies": {
+  }
+}
