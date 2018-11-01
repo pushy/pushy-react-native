@@ -119,23 +119,25 @@ RCT_EXPORT_METHOD(setEnterpriseConfig:(NSString *)apiEndpoint)
 
 RCT_EXPORT_METHOD(notify:(NSString *)title message:(NSString *)message)
 {
-    // Display the notification as an alert
-    UIAlertController * alert = [UIAlertController
-                                 alertControllerWithTitle:title
-                                 message:message
-                                 preferredStyle:UIAlertControllerStyleAlert];
-    
-    // Add an action button
-    [alert addAction:[UIAlertAction
-                      actionWithTitle:@"OK"
-                      style:UIAlertActionStyleDefault
-                      handler:nil]];
-    
-    // Show the alert dialog
-    [[UIApplication sharedApplication].delegate.window.rootViewController presentViewController:alert animated:YES completion:nil];
-    
-    // Reset badge number
-    [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0];
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        // Display the notification as an alert
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:title
+                                     message:message
+                                     preferredStyle:UIAlertControllerStyleAlert];
+
+        // Add an action button
+        [alert addAction:[UIAlertAction
+                          actionWithTitle:@"OK"
+                          style:UIAlertActionStyleDefault
+                          handler:nil]];
+
+        // Show the alert dialog
+        [[UIApplication sharedApplication].delegate.window.rootViewController presentViewController:alert animated:YES completion:nil];
+
+        // Reset badge number
+        [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0];
+    });
 }
 
 RCT_EXPORT_METHOD(setBadge:(nonnull NSNumber *)badge)
