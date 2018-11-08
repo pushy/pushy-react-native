@@ -47,8 +47,11 @@ public class Pushy : NSObject {
         PushySwizzler.swizzleMethodImplementations(self.appDelegate.superclass!, "application:didFailToRegisterForRemoteNotificationsWithError:")
         PushySwizzler.swizzleMethodImplementations(self.appDelegate.superclass!, "application:didReceiveRemoteNotification:fetchCompletionHandler:")
         
-        // Request an APNs token from Apple
-        requestAPNsToken(self.application)
+        // Run code on main thread
+        DispatchQueue.main.async {
+            // Request an APNs token from Apple
+            self.requestAPNsToken(self.application)
+        }
     }
     
     // Backwards-compatible method for requesting an APNs token from Apple
