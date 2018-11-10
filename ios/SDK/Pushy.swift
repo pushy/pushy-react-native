@@ -12,7 +12,6 @@ import UserNotifications
 public class Pushy : NSObject {
     static var shared: Pushy?
     
-    private var appDelegate: UIApplicationDelegate
     private var application: UIApplication
     private var registrationHandler: ((Error?, String) -> Void)?
     private var notificationHandler: (([AnyHashable : Any], @escaping ((UIBackgroundFetchResult) -> Void)) -> Void)?
@@ -20,7 +19,6 @@ public class Pushy : NSObject {
     public init(_ application: UIApplication) {
         // Store application and app delegate for later
         self.application = application
-        self.appDelegate = application.delegate!
         
         // Initialize Pushy instance before accessing the self object
         super.init()
@@ -42,13 +40,15 @@ public class Pushy : NSObject {
         // Save the handler for later
         self.registrationHandler = registrationHandler
         
-        // Swizzle methods (will call method with same selector in Pushy class)
-        PushySwizzler.swizzleMethodImplementations(self.appDelegate.superclass!, "application:didRegisterForRemoteNotificationsWithDeviceToken:")
-        PushySwizzler.swizzleMethodImplementations(self.appDelegate.superclass!, "application:didFailToRegisterForRemoteNotificationsWithError:")
-        PushySwizzler.swizzleMethodImplementations(self.appDelegate.superclass!, "application:didReceiveRemoteNotification:fetchCompletionHandler:")
-        
         // Run code on main thread
         DispatchQueue.main.async {
+            let appDelegate = self.application.delegate!
+
+            // Swizzle methods (will call method with same selector in Pushy class)
+            PushySwizzler.swizzleMethodImplementations(appDelegate.superclass!, "application:didRegisterForRemoteNotificationsWithDeviceToken:")
+            PushySwizzler.swizzleMethodImplementations(appDelegate.superclass!, "application:didFailToRegisterForRemoteNotificationsWithError:")
+            PushySwizzler.swizzleMethodImplementations(appDelegate.superclass!, "application:didReceiveRemoteNotification:fetchCompletionHandler:")
+
             // Request an APNs token from Apple
             self.requestAPNsToken(self.application)
         }
