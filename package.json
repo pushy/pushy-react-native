@@ -1,6 +1,6 @@
 {
   "name": "pushy-react-native",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "The official Pushy SDK for React Native apps.",
   "main": "lib/Pushy.js",
   "scripts": {
