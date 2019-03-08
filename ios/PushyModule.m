@@ -7,6 +7,7 @@
 RCT_EXPORT_MODULE();
 
 Pushy *pushy;
+NSDictionary *coldStartNotification;
 
 - (Pushy *) getPushyInstance
 {
@@ -16,6 +17,19 @@ Pushy *pushy;
     }
     
     return pushy;
+}
+
++ (void)didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    // Got options?
+    if (launchOptions != nil) {
+        // Get remote notification (may be nil)
+        NSDictionary *remoteNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
+        
+        // Save cold-start notification for later when Pushy.listen() is called
+        if (remoteNotification != nil) {
+            coldStartNotification = remoteNotification;
+        }
+    }
 }
 
 RCT_EXPORT_METHOD(listen)
@@ -31,6 +45,12 @@ RCT_EXPORT_METHOD(listen)
         // Call the completion handler immediately on behalf of the app
         completionHandler(UIBackgroundFetchResultNewData);
     }];
+    
+    // Check for cold start notification
+    if (coldStartNotification != nil) {
+        // Emit RCT event with notification payload dictionary
+        [self sendEventWithName:@"Notification" body:coldStartNotification];
+    }
 }
 
 RCT_EXPORT_METHOD(setCriticalAlertOption)
