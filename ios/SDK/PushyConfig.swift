@@ -11,4 +11,7 @@ import Foundation
 public class PushyConfig {
     // API hostname 
     static var apiBaseUrl = "https://api.pushy.me"
+    
+    // SDK version code
+    static var sdkVersionCode = 1012;
 }
