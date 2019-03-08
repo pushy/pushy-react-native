@@ -39,7 +39,8 @@ public class Pushy : NSObject {
     }
     
     // Make it possible to pass in custom iOS 10+ notification options ([.badge, .sound, .alert, ...])
-    @objc public func setCustomNotificationOptions(_ options:Any) {
+    @available(iOS 10.0, *)
+    @objc public func setCustomNotificationOptions(_ options:UNAuthorizationOptions) {
         // Save the options for later
         self.notificationOptions = options
     }

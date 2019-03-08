@@ -1,5 +1,6 @@
 #import "PushyModule.h"
 #import "PushyRN-Swift.h"
+#import <UserNotifications/UserNotifications.h>
 
 @implementation PushyModule
 
@@ -30,6 +31,15 @@ RCT_EXPORT_METHOD(listen)
         // Call the completion handler immediately on behalf of the app
         completionHandler(UIBackgroundFetchResultNewData);
     }];
+}
+
+RCT_EXPORT_METHOD(setCriticalAlertOption)
+{
+    // Define critical alert notification options
+    UNAuthorizationOptions options = UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert | UNAuthorizationOptionCriticalAlert;
+    
+    // Set custom options
+    [[self getPushyInstance] setCustomNotificationOptions: options];
 }
 
 RCT_EXPORT_METHOD(register:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
@@ -125,16 +135,16 @@ RCT_EXPORT_METHOD(notify:(NSString *)title message:(NSString *)message)
                                      alertControllerWithTitle:title
                                      message:message
                                      preferredStyle:UIAlertControllerStyleAlert];
-
+        
         // Add an action button
         [alert addAction:[UIAlertAction
                           actionWithTitle:@"OK"
                           style:UIAlertActionStyleDefault
                           handler:nil]];
-
+        
         // Show the alert dialog
         [[UIApplication sharedApplication].delegate.window.rootViewController presentViewController:alert animated:YES completion:nil];
-
+        
         // Reset badge number
         [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0];
     });
