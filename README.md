@@ -11,7 +11,7 @@ Please refer to our [detailed documentation](https://pushy.me/docs/additional-pl
 
 ## Demo
 
-Please refer to [pushy-demo-react-native])(https://github.com/pushy-me/pushy-demo-react-native) for a sample project that integrates this SDK.
+Please refer to [pushy-demo-react-native](https://github.com/pushy-me/pushy-demo-react-native) for a sample project that integrates this SDK.
 
 ## License
 
