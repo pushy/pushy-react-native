@@ -9,6 +9,10 @@ The official [Pushy SDK](https://pushy.me/) for [React Native](https://facebook.
 
 Please refer to our [detailed documentation](https://pushy.me/docs/additional-platforms/react-native) to get started.
 
+## Demo
+
+Please refer to [pushy-demo-react-native])(https://github.com/pushy-me/pushy-demo-react-native) for a sample project that integrates this SDK.
+
 ## License
 
 [Apache 2.0](LICENSE)
