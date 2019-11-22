@@ -42,6 +42,12 @@ RCT_EXPORT_METHOD(listen)
         // Emit RCT event with notification payload dictionary
         [self sendEventWithName:@"Notification" body:data];
         
+        // Check if app was inactive (this means notification was clicked)
+        if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateInactive) {
+            // Emit RCT notification click event with notification payload dictionary
+            [self sendEventWithName:@"NotificationClick" body:data];
+        }
+        
         // Call the completion handler immediately on behalf of the app
         completionHandler(UIBackgroundFetchResultNewData);
     }];
@@ -50,6 +56,9 @@ RCT_EXPORT_METHOD(listen)
     if (coldStartNotification != nil) {
         // Emit RCT event with notification payload dictionary
         [self sendEventWithName:@"Notification" body:coldStartNotification];
+        
+        // Cold start notifications were always clicked by the user
+        [self sendEventWithName:@"NotificationClick" body:coldStartNotification];
     }
 }
 
@@ -147,7 +156,7 @@ RCT_EXPORT_METHOD(setEnterpriseConfig:(NSString *)apiEndpoint)
     [[self getPushyInstance] setEnterpriseConfigWithApiEndpoint:apiEndpoint];
 }
 
-RCT_EXPORT_METHOD(notify:(NSString *)title message:(NSString *)message)
+RCT_EXPORT_METHOD(notify:(NSString *)title message:(NSString *)message payload:(NSString *)payload)
 {
     dispatch_sync(dispatch_get_main_queue(), ^{
         // Display the notification as an alert
@@ -179,7 +188,7 @@ RCT_EXPORT_METHOD(setBadge:(nonnull NSNumber *)badge)
 - (NSArray<NSString *> *)supportedEvents
 {
     // Emit Notification RTC Events
-    return @[@"Notification"];
+    return @[@"Notification", @"NotificationClick"];
 }
 
 @end
