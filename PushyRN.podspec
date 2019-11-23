@@ -11,12 +11,14 @@ Pod::Spec.new do |s|
   s.author          = package['author']
   s.license         = package['license']
 
-  s.platform        = :ios
+  s.platform       = :ios, "7.0"
   s.source          = { :git => 'https://github.com/pushy-me/pushy-react-native.git', :tag => s.version }
   s.source_files    = '**/*.{h,m,swift}'
   s.requires_arc    = true
   s.swift_version   = '4.2'
 
-  s.dependency 'React'
-  s.dependency 'Pushy'
+  # The "React" pod is required due to the use of RCTBridgeModule & RCTEventEmitter
+  # Let's ensure we have version 0.13.0 or greater to avoid a cocoapods issue noted in React Native's release notes:
+  # https://github.com/facebook/react-native/releases/tag/v0.13.0
+  s.dependency 'React', '>= 0.13.0', '< 1.0.0'
 end

@@ -1,5 +1,5 @@
 #import "PushyModule.h"
-#import "PushyRN-Swift.h"
+#import <PushyRN/PushyRN-Swift.h>
 #import <UserNotifications/UserNotifications.h>
 
 @implementation PushyModule
@@ -156,7 +156,7 @@ RCT_EXPORT_METHOD(setEnterpriseConfig:(NSString *)apiEndpoint)
     [[self getPushyInstance] setEnterpriseConfigWithApiEndpoint:apiEndpoint];
 }
 
-RCT_EXPORT_METHOD(notify:(NSString *)title message:(NSString *)message payload:(NSString *)payload)
+RCT_EXPORT_METHOD(notify:(NSString *)title message:(NSString *)message payload:(NSMutableDictionary *)payload)
 {
     dispatch_sync(dispatch_get_main_queue(), ^{
         // Display the notification as an alert
