@@ -156,7 +156,7 @@ RCT_EXPORT_METHOD(setEnterpriseConfig:(NSString *)apiEndpoint)
     [[self getPushyInstance] setEnterpriseConfigWithApiEndpoint:apiEndpoint];
 }
 
-RCT_EXPORT_METHOD(notify:(NSString *)title message:(NSString *)message payload:(NSMutableDictionary *)payload)
+RCT_EXPORT_METHOD(notify:(NSString *)title message:(NSString *)message payload:(id *)payload)
 {
     dispatch_sync(dispatch_get_main_queue(), ^{
         // Display the notification as an alert
