@@ -1,5 +1,9 @@
 #import "PushyModule.h"
+#if __has_include(<PushyRN/PushyRN-Swift.h>)
 #import <PushyRN/PushyRN-Swift.h>
+#else
+#import "PushyRN-Swift.h"
+#endif
 #import <UserNotifications/UserNotifications.h>
 
 @implementation PushyModule
