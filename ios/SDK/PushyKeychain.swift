@@ -116,7 +116,7 @@ public enum Accessibility {
      without a passcode. Disabling the device passcode will cause all
      items in this class to be deleted.
      */
-    @available(iOS 8.0, OSX 10.10, *)
+    @available(iOS 8.0, *)
     case whenPasscodeSetThisDeviceOnly
     
     /**
@@ -154,7 +154,7 @@ public struct AuthenticationPolicy: OptionSet {
      have to be available or enrolled. Item is still accessible by Touch ID
      even if fingers are added or removed.
      */
-    @available(iOS 8.0, OSX 10.10, *)
+    @available(iOS 8.0, *)
     @available(watchOS, unavailable)
     public static let userPresence = AuthenticationPolicy(rawValue: 1 << 0)
     
@@ -253,7 +253,7 @@ public struct Attributes {
         return attributes[AttributeAccessible] as? String
     }
     public var accessControl: SecAccessControl? {
-        if #available(OSX 10.10, *) {
+        if #available(iOS 8.0, *) {
             if let accessControl = attributes[AttributeAccessControl] {
                 return (accessControl as! SecAccessControl)
             }
@@ -365,7 +365,7 @@ public final class Keychain {
         return options.accessibility
     }
     
-    @available(iOS 8.0, OSX 10.10, *)
+    @available(iOS 8.0, *)
     @available(watchOS, unavailable)
     public var authenticationPolicy: AuthenticationPolicy? {
         return options.authenticationPolicy
@@ -383,7 +383,7 @@ public final class Keychain {
         return options.comment
     }
     
-    @available(iOS 8.0, OSX 10.10, *)
+    @available(iOS 8.0, *)
     @available(watchOS, unavailable)
     public var authenticationPrompt: String? {
         return options.authenticationPrompt
@@ -448,7 +448,7 @@ public final class Keychain {
         return Keychain(options)
     }
     
-    @available(iOS 8.0, OSX 10.10, *)
+    @available(iOS 8.0, *)
     @available(watchOS, unavailable)
     public func accessibility(_ accessibility: Accessibility, authenticationPolicy: AuthenticationPolicy) -> Keychain {
         var options = self.options
@@ -481,7 +481,7 @@ public final class Keychain {
         return Keychain(options)
     }
     
-    @available(iOS 8.0, OSX 10.10, *)
+    @available(iOS 8.0, *)
     @available(watchOS, unavailable)
     public func authenticationPrompt(_ authenticationPrompt: String) -> Keychain {
         var options = self.options
@@ -574,7 +574,7 @@ public final class Keychain {
         #if os(iOS)
             if #available(iOS 9.0, *) {
                 query[UseAuthenticationUI] = UseAuthenticationUIFail
-            } else {
+            } else if #available(iOS 8.0, *) {
                 query[UseNoAuthenticationUI] = kCFBooleanTrue
             }
         #elseif os(OSX)
@@ -908,7 +908,8 @@ public final class Keychain {
                         if let account = credentials[AttributeAccount] {
                             credential["account"] = account
                         }
-                        if let password = credentials[SharedPassword] {
+                        /** Credential Key Constants */
+                        if let password = credentials[String(kSecSharedPassword)] {
                             credential["password"] = password
                         }
                     }
@@ -1060,7 +1061,7 @@ private let Class = String(kSecClass)
 /** Attribute Key Constants */
 private let AttributeAccessible = String(kSecAttrAccessible)
 
-@available(iOS 8.0, OSX 10.10, *)
+@available(iOS 8.0, *)
 private let AttributeAccessControl = String(kSecAttrAccessControl)
 
 private let AttributeAccessGroup = String(kSecAttrAccessGroup)
@@ -1103,7 +1104,7 @@ private let ValueRef = String(kSecValueRef)
 private let ValuePersistentRef = String(kSecValuePersistentRef)
 
 /** Other Constants */
-@available(iOS 8.0, OSX 10.10, *)
+@available(iOS 8.0, *)
 private let UseOperationPrompt = String(kSecUseOperationPrompt)
 
 #if os(iOS)
@@ -1130,11 +1131,6 @@ private let UseAuthenticationUIFail = String(kSecUseAuthenticationUIFail)
 @available(iOS 9.0, OSX 10.11, *)
 @available(watchOS, unavailable)
 private let UseAuthenticationUISkip = String(kSecUseAuthenticationUISkip)
-
-#if os(iOS)
-    /** Credential Key Constants */
-    private let SharedPassword = String(kSecSharedPassword)
-#endif
 
 extension Keychain: CustomStringConvertible, CustomDebugStringConvertible {
     public var description: String {
@@ -1180,7 +1176,7 @@ extension Options {
             query[AttributeAuthenticationType] = authenticationType.rawValue
         }
         
-        if #available(OSX 10.10, *) {
+        if #available(iOS 8.0, *) {
             if authenticationPrompt != nil {
                 query[UseOperationPrompt] = authenticationPrompt
             }
@@ -1209,7 +1205,7 @@ extension Options {
         }
         
         if let policy = authenticationPolicy {
-            if #available(OSX 10.10, *) {
+            if #available(iOS 8.0, *) {
                 var error: Unmanaged<CFError>?
                 guard let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, accessibility.rawValue as CFTypeRef, SecAccessControlCreateFlags(rawValue: CFOptionFlags(policy.rawValue)), &error) else {
                     if let error = error?.takeUnretainedValue() {
@@ -1553,7 +1549,7 @@ extension AuthenticationType: RawRepresentable, CustomStringConvertible {
 extension Accessibility: RawRepresentable, CustomStringConvertible {
     
     public init?(rawValue: String) {
-        if #available(OSX 10.10, *) {
+        if #available(iOS 8.0, *) {
             switch rawValue {
             case String(kSecAttrAccessibleWhenUnlocked):
                 self = .whenUnlocked
@@ -1601,7 +1597,7 @@ extension Accessibility: RawRepresentable, CustomStringConvertible {
         case .always:
             return String(kSecAttrAccessibleAlways)
         case .whenPasscodeSetThisDeviceOnly:
-            if #available(OSX 10.10, *) {
+            if #available(iOS 8.0, *) {
                 return String(kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly)
             } else {
                 fatalError("'Accessibility.WhenPasscodeSetThisDeviceOnly' is not available on this version of OS.")
