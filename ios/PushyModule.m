@@ -177,9 +177,6 @@ RCT_EXPORT_METHOD(notify:(NSString *)title message:(NSString *)message payload:(
         
         // Show the alert dialog
         [[UIApplication sharedApplication].delegate.window.rootViewController presentViewController:alert animated:YES completion:nil];
-        
-        // Reset badge number
-        [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0];
     });
 }
 
