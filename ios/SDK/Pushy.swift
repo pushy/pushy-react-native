@@ -38,7 +38,7 @@ public class Pushy : NSObject {
         self.notificationHandler = notificationHandler
         
         // Swizzle didReceiveRemoteNotification method
-        PushySwizzler.swizzleMethodImplementations(self.appDelegate.superclass!, "application:didReceiveRemoteNotification:fetchCompletionHandler:")
+        PushySwizzler.swizzleMethodImplementations(type(of: self.appDelegate), "application:didReceiveRemoteNotification:fetchCompletionHandler:")
     }
     
     // Make it possible to pass in custom iOS 10+ notification options ([.badge, .sound, .alert, ...])
@@ -54,8 +54,8 @@ public class Pushy : NSObject {
         self.registrationHandler = registrationHandler
         
         // Swizzle methods (will call method with same selector in Pushy class)
-        PushySwizzler.swizzleMethodImplementations(self.appDelegate.superclass!, "application:didRegisterForRemoteNotificationsWithDeviceToken:")
-        PushySwizzler.swizzleMethodImplementations(self.appDelegate.superclass!, "application:didFailToRegisterForRemoteNotificationsWithError:")
+        PushySwizzler.swizzleMethodImplementations(type(of: self.appDelegate), "application:didRegisterForRemoteNotificationsWithDeviceToken:")
+        PushySwizzler.swizzleMethodImplementations(type(of: self.appDelegate), "application:didFailToRegisterForRemoteNotificationsWithError:")
         
         // Request an APNs token from Apple
         requestAPNsToken(self.application)
