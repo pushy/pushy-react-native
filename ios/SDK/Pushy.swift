@@ -148,19 +148,31 @@ public class Pushy : NSObject {
     // Register a new Pushy device
     private func createNewDevice(_ apnsToken:String) {
         // Fetch app bundle ID
-        let bundleID = Bundle.main.bundleIdentifier
-        
+        let bundleId = Bundle.main.bundleIdentifier
+
         // Bundle ID fetch failed?
-        guard let appBundleID = bundleID else {
+        guard let appBundleId = bundleId else {
             registrationHandler?(PushyRegistrationException.Error("Please configure a Bundle ID for your app to use Pushy."), "")
             return
         }
+        
+        // Fetch custom Pushy App ID (may be null)
+        let appId = PushySettings.getString(PushySettings.pushyAppId)
         
         // Determine if this is a sandbox or production APNs token
         let pushEnvironment = PushyEnvironment.getEnvironmentString()
         
         // Prepare /register API post data
-        let params: [String:Any] = ["app": appBundleID, "platform": "ios", "pushToken": apnsToken, "pushEnvironment": pushEnvironment ]
+        var params: [String:Any] = ["platform": "ios", "pushToken": apnsToken, "pushEnvironment": pushEnvironment ]
+        
+        // Authenticate using Bundle ID by default
+        if appId == nil {
+            params["app"] = appBundleId
+        }
+        else {
+            // Authenticate using provided Pushy App ID
+            params["appId"] = appId!
+        }
         
         // Execute post request
         PushyHTTP.postAsync(self.getApiEndpoint() + "/register", params: params) { (err: Error?, response: [String:AnyObject]?) -> () in
@@ -425,6 +437,28 @@ public class Pushy : NSObject {
     @objc public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         // Call the notification handler, if defined
         Pushy.shared?.notificationHandler?(userInfo, completionHandler)
+    }
+    
+    // Support for Pushy App ID authentication instead of Bundle ID-based auth
+    @objc public func setAppId(_ appId: String?) {
+        // Fetch previous App ID
+        let previousAppId = PushySettings.getString(PushySettings.pushyAppId)
+        
+        // Check if this is a new Pushy App ID
+        if appId != previousAppId {
+            // Unregister device
+            PushySettings.setString(PushySettings.apnsToken, nil)
+            PushySettings.setString(PushySettings.pushyToken, nil)
+            PushySettings.setString(PushySettings.pushyTokenAuth, nil)
+        }
+        
+        // Update stored value
+        if (appId != nil) {
+            PushySettings.setString(PushySettings.pushyAppId, appId!)
+        }
+        else {
+            PushySettings.setString(PushySettings.pushyAppId, nil)
+        }
     }
 }
 

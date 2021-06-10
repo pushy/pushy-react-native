@@ -160,6 +160,17 @@ RCT_EXPORT_METHOD(setEnterpriseConfig:(NSString *)apiEndpoint)
     [[self getPushyInstance] setEnterpriseConfigWithApiEndpoint:apiEndpoint];
 }
 
+RCT_EXPORT_METHOD(setAppId:(NSString *)appId)
+{
+    // Empty App ID?
+    if ([appId length] == 0) {
+        appId = nil;
+    }
+    
+    // Set Pushy App ID
+    [[self getPushyInstance] setAppId:appId];
+}
+
 RCT_EXPORT_METHOD(notify:(NSString *)title message:(NSString *)message payload:(id *)payload)
 {
     dispatch_sync(dispatch_get_main_queue(), ^{
