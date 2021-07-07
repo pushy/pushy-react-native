@@ -163,7 +163,7 @@ public class Pushy : NSObject {
         let pushEnvironment = PushyEnvironment.getEnvironmentString()
         
         // Prepare /register API post data
-        var params: [String:Any] = ["platform": "ios", "pushToken": apnsToken, "pushEnvironment": pushEnvironment ]
+        var params: [String:Any] = ["platform": "ios", "pushToken": apnsToken, "pushEnvironment": pushEnvironment, "pushBundle": appBundleId ]
         
         // Authenticate using Bundle ID by default
         if appId == nil {
@@ -212,8 +212,17 @@ public class Pushy : NSObject {
         // Determine if this is a sandbox or production APNs token
         let pushEnvironment = PushyEnvironment.getEnvironmentString()
         
+        // Fetch app bundle ID
+        let bundleId = Bundle.main.bundleIdentifier
+        
+        // Bundle ID fetch failed?
+        guard let appBundleId = bundleId else {
+            self.registrationHandler?(PushyRegistrationException.Error("Please configure a Bundle ID for your app to use Pushy."), "")
+            return
+        }
+        
         // Prepare request params
-        let params: [String:Any] = ["token": pushyToken, "auth": pushyTokenAuth, "pushToken": apnsToken, "pushEnvironment": pushEnvironment]
+        let params: [String:Any] = ["token": pushyToken, "auth": pushyTokenAuth, "pushToken": apnsToken, "pushEnvironment": pushEnvironment, "pushBundle": appBundleId]
         
         // Execute post request
         PushyHTTP.postAsync(self.getApiEndpoint() + "/devices/token", params: params) { (err: Error?, response: [String:AnyObject]?) -> () in
