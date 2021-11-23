@@ -10,6 +10,11 @@ import UIKit
 
 class PushySwizzler {
     class func swizzleMethodImplementations(_ className: AnyObject.Type, _ methodSelector: String) {
+        // Check if AppDelegate method swizzling has been disabled by the developer
+        if (!PushySettings.getBoolean(PushySettings.pushyMethodSwizzling, true)) {
+            return
+        }
+        
         // Build selector to original method
         let selector = Selector(methodSelector)
         

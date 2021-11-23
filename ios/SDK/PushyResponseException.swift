@@ -11,3 +11,11 @@ import Foundation
 enum PushyResponseException: Error {
     case Error(String)
 }
+
+extension PushyResponseException: LocalizedError {
+    var errorDescription: String? {
+        switch self {
+        case .Error(let reason): return reason
+        }
+    }
+}

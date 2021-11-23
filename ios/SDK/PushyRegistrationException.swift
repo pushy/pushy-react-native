@@ -9,5 +9,13 @@
 import Foundation
 
 enum PushyRegistrationException: Error {
-    case Error(String)
+    case Error(String, String)
+}
+
+extension PushyRegistrationException: LocalizedError {
+    var errorDescription: String? {
+        switch self {
+        case .Error(let reason, let code): return "\(reason) (\(code))"
+        }
+    }
 }

@@ -9,16 +9,18 @@
 import Foundation
 
 public class PushySettings {
-    static var pushyAppId = "_pushyAppId"
     static var pushyToken = "_pushyToken"
     static var apnsToken = "_pushyApnsToken"
     static var pushyTokenAuth = "_pushyTokenAuth"
+    static var pushyAppId = "_pushyAppId"
     static var pushyEnterpriseApi = "_pushyEnterpriseApi"
+    static var pushyInAppBanner = "_pushyInAppBanner"
+    static var pushyMethodSwizzling = "_pushyMethodSwizzling"
     
     // Cross-reinstall key-value store
     static var keychain = Keychain()
     
-    class func getString(_ key: String) -> String? {
+    class func getString(_ key: String, userDefaultsOnly: Bool = false) -> String? {
         // Fetch value from Keychain
         let keychainValue = keychain[key]
         
@@ -40,7 +42,7 @@ public class PushySettings {
         }
         
         // No UserDefaults value but Keychain has one?
-        if (userDefaultsValue == nil && keychainValue != nil) {
+        if (userDefaultsValue == nil && keychainValue != nil && !userDefaultsOnly) {
             // Synchronize it to UserDefaults for improved persistence
             UserDefaults.standard.set(keychainValue, forKey: key)
             
@@ -58,5 +60,20 @@ public class PushySettings {
         
         // Save it in Keychain for improved persistence
         keychain[key] = value
+    }
+    
+    class func getBoolean(_ key: String, _ defaultValue: Bool) -> Bool {
+        // Support for default value
+        if (UserDefaults.standard.object(forKey: key) == nil) {
+            return defaultValue
+        }
+        
+        // Fetch value from UserDefaults
+        return UserDefaults.standard.bool(forKey: key)
+    }
+    
+    class func setBoolean(_ key: String, _ value: Bool?) {
+        // Store value in UserDefaults
+        UserDefaults.standard.set(value, forKey: key)
     }
 }
