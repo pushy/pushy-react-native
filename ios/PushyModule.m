@@ -38,32 +38,35 @@ NSDictionary *coldStartNotification;
 
 RCT_EXPORT_METHOD(listen)
 {
-    // Handle push notifications
-    [[self getPushyInstance] setNotificationHandler:^(NSDictionary *data, void (^completionHandler)(UIBackgroundFetchResult)) {
-        // Print notification payload data
-        NSLog(@"Received notification: %@", data);
+    // Run on main thread
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        // Handle push notifications
+        [[self getPushyInstance] setNotificationHandler:^(NSDictionary *data, void (^completionHandler)(UIBackgroundFetchResult)) {
+            // Print notification payload data
+            NSLog(@"Received notification: %@", data);
         
-        // Emit RCT event with notification payload dictionary
-        [self sendEventWithName:@"Notification" body:data];
+            // Emit RCT event with notification payload dictionary
+            [self sendEventWithName:@"Notification" body:data];
         
-        // Check if app was inactive (this means notification was clicked)
-        if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateInactive) {
-            // Emit RCT notification click event with notification payload dictionary
-            [self sendEventWithName:@"NotificationClick" body:data];
-        }
+            // Check if app was inactive (this means notification was clicked)
+            if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateInactive) {
+                // Emit RCT notification click event with notification payload dictionary
+                [self sendEventWithName:@"NotificationClick" body:data];
+            }
         
-        // Call the completion handler immediately on behalf of the app
-        completionHandler(UIBackgroundFetchResultNewData);
-    }];
+            // Call the completion handler immediately on behalf of the app
+            completionHandler(UIBackgroundFetchResultNewData);
+        }];
     
-    // Check for cold start notification
-    if (coldStartNotification != nil) {
-        // Emit RCT event with notification payload dictionary
-        [self sendEventWithName:@"Notification" body:coldStartNotification];
+        // Check for cold start notification
+        if (coldStartNotification != nil) {
+            // Emit RCT event with notification payload dictionary
+            [self sendEventWithName:@"Notification" body:coldStartNotification];
         
-        // Cold start notifications were always clicked by the user
-        [self sendEventWithName:@"NotificationClick" body:coldStartNotification];
-    }
+            // Cold start notifications were always clicked by the user
+            [self sendEventWithName:@"NotificationClick" body:coldStartNotification];
+        }
+    });
 }
 
 RCT_EXPORT_METHOD(setCriticalAlertOption)
@@ -80,32 +83,35 @@ RCT_EXPORT_METHOD(register:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseR
     // Keep track of promise resolve/reject invocation
     __block BOOL resolved = NO;
     
-    // Register the device for push notifications
-    [[self getPushyInstance] register:^(NSError *error, NSString* deviceToken) {
-        // Handle registration errors
-        if (error != nil) {
+    // Run on main thread
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        // Register the device for push notifications
+        [[self getPushyInstance] register:^(NSError *error, NSString* deviceToken) {
+            // Handle registration errors
+            if (error != nil) {
+                // Avoid resolving if did so in the past
+                if (!resolved){
+                    resolved = YES;
+                
+                    // Reject promise with error
+                    reject(@"Error", [NSString stringWithFormat:@"Registration failed: %@", error], error);
+                }
+            
+                return;
+            }
+        
+            // Print device token to console
+            NSLog(@"Pushy device token: %@", deviceToken);
+        
             // Avoid resolving if did so in the past
             if (!resolved){
                 resolved = YES;
-                
-                // Reject promise with error
-                reject(@"Error", [NSString stringWithFormat:@"Registration failed: %@", error], error);
+            
+                // Resolve promise with device token
+                resolve(deviceToken);
             }
-            
-            return;
-        }
-        
-        // Print device token to console
-        NSLog(@"Pushy device token: %@", deviceToken);
-        
-        // Avoid resolving if did so in the past
-        if (!resolved){
-            resolved = YES;
-            
-            // Resolve promise with device token
-            resolve(deviceToken);
-        }
-    }];
+        }];
+    });
 }
 
 RCT_EXPORT_METHOD(subscribe:(NSString *)topic resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
@@ -173,6 +179,7 @@ RCT_EXPORT_METHOD(setAppId:(NSString *)appId)
 
 RCT_EXPORT_METHOD(notify:(NSString *)title message:(NSString *)message payload:(id *)payload)
 {
+    // Run on main thread
     dispatch_sync(dispatch_get_main_queue(), ^{
         // Display the notification as an alert
         UIAlertController * alert = [UIAlertController
