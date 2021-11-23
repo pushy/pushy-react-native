@@ -57,8 +57,17 @@ RCT_EXPORT_METHOD(listen)
             // Call the completion handler immediately on behalf of the app
             completionHandler(UIBackgroundFetchResultNewData);
         }];
+        
+        // Handle iOS in-app banner notification tap event (iOS 10+)
+        [[self getPushyInstance] setNotificationClickListener:^(NSDictionary *data) {
+            // Print event info & notification payload data
+            NSLog(@"Notification click: %@", data);
+            
+            // Emit RTC notification click event with payload dictionary
+            [self sendEventWithName:@"NotificationClick" body:data];
+        }];
     
-        // Check for cold start notification
+        // Check for cold start notification (from didFinishLaunchingWithOptions)
         if (coldStartNotification != nil) {
             // Emit RCT event with notification payload dictionary
             [self sendEventWithName:@"Notification" body:coldStartNotification];
@@ -111,6 +120,21 @@ RCT_EXPORT_METHOD(register:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseR
                 resolve(deviceToken);
             }
         }];
+    });
+}
+
+RCT_EXPORT_METHOD(toggleInAppBanner:(BOOL *)toggle)
+{
+    // Run on main thread
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        // Enable/disable in-app notification banners (iOS 10+)
+        [[self getPushyInstance] toggleInAppBanner:toggle];
+        
+        // Toggled off? (after previously being toggled on)
+        if (!toggle) {
+            // Reset UNUserNotificationCenterDelegate to nil to avoid displaying banner
+            [UNUserNotificationCenter currentNotificationCenter].delegate = nil;
+        }
     });
 }
 
