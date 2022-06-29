@@ -8,13 +8,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pushy-me/pushy-react-native.git"
+    "url": "git+https://github.com/pushy/pushy-react-native.git"
   },
   "author": "Pushy <support@pushy.me>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/pushy-me/pushy-react-native/issues"
+    "url": "https://github.com/pushy/pushy-react-native/issues"
   },
-  "homepage": "https://github.com/pushy-me/pushy-react-native#readme",
+  "homepage": "https://github.com/pushy/pushy-react-native#readme",
   "dependencies": {}
 }

@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.license         = package['license']
 
   s.platform       = :ios, "8.0"
-  s.source          = { :git => 'https://github.com/pushy-me/pushy-react-native.git', :tag => s.version }
+  s.source          = { :git => 'https://github.com/pushy/pushy-react-native.git', :tag => s.version }
   s.source_files    = '**/*.{h,m,swift}'
   s.requires_arc    = true
   s.swift_version   = '4.2'
