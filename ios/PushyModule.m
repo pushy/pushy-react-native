@@ -23,6 +23,16 @@ NSDictionary *coldStartNotification;
     return pushy;
 }
 
++ (Pushy *) getSharedPushyInstance
+{
+    // Pushy instance singleton
+    if (!pushy) {
+        pushy = [[Pushy alloc]init:[UIApplication sharedApplication]];
+    }
+    
+    return pushy;
+}
+
 + (void)didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Got options?
     if (launchOptions != nil) {
@@ -136,6 +146,13 @@ RCT_EXPORT_METHOD(toggleInAppBanner:(BOOL *)toggle)
             [UNUserNotificationCenter currentNotificationCenter].delegate = nil;
         }
     });
+}
+
+
+RCT_EXPORT_METHOD(toggleMethodSwizzling:(BOOL *)toggle)
+{
+    // Enable/disable AppDelegate method swizzling
+    [[self getPushyInstance] toggleMethodSwizzling:toggle];
 }
 
 RCT_EXPORT_METHOD(subscribe:(NSString *)topic resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
