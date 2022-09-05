@@ -224,8 +224,11 @@ RCT_EXPORT_METHOD(notify:(NSString *)title message:(NSString *)message payload:(
 
 RCT_EXPORT_METHOD(setBadge:(nonnull NSNumber *)badge)
 {
-    // Set app badge number
-    [[UIApplication sharedApplication] setApplicationIconBadgeNumber:[badge intValue]];
+    // Run on main thread
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        // Set app badge number
+        [[UIApplication sharedApplication] setApplicationIconBadgeNumber:[badge intValue]];
+    });
 }
 
 - (NSArray<NSString *> *)supportedEvents
