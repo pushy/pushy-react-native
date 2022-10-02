@@ -196,7 +196,7 @@ RCT_EXPORT_METHOD(isRegistered:(RCTPromiseResolveBlock)resolve rejecter:(RCTProm
     resolve([NSNumber numberWithBool:isRegistered]);
 }
 
-RCT_EXPORT_METHOD(setEnterpriseConfig:(NSString *)apiEndpoint)
+RCT_EXPORT_METHOD(setEnterpriseConfig:(NSString *)apiEndpoint mqttEndpoint:(NSString *)mqttEndpoint)
 {
     // Empty endpoint?
     if ([apiEndpoint length] == 0) {
