@@ -84,6 +84,9 @@ RCT_EXPORT_METHOD(listen)
         
             // Cold start notifications were always clicked by the user
             [self sendEventWithName:@"NotificationClick" body:coldStartNotification];
+
+            // Clear cold start notification obj to avoid re-delivery on app reload
+            coldStartNotification = nil;
         }
     });
 }
