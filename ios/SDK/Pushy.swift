@@ -45,7 +45,7 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
         
         // In-app notification banner support (iOS 10+, defaults to off)
         // Set delegate to hook into userNotificationCenter callbacks
-        if #available(iOS 10.0, *), PushySettings.getBoolean(PushySettings.pushyInAppBanner, false), PushySettings.getBoolean(PushySettings.pushyMethodSwizzling, true) {
+        if #available(iOS 10.0, *), PushySettings.getBoolean(PushySettings.pushyInAppBanner, false) {
             UNUserNotificationCenter.current().delegate = self
         }
     }
@@ -59,7 +59,14 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
     // Display in-app notification banners (iOS 10+) and invoke notification handler
     @available(iOS 10.0, *)
     public func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        // Call the notification handler, if defined
+        // Avoid invoking handler and displaying banner twice for same payload
+        if (isDuplicateNotification(notification.request.content.userInfo)) {
+            print("Ignoring duplicate notification")
+            completionHandler([])
+            return
+        }
+        
+        // Call the incoming notification handler
         Pushy.shared?.notificationHandler?(notification.request.content.userInfo, {(UIBackgroundFetchResult) in})
         
         // Show in-app banner (no sound or badge)
@@ -78,12 +85,13 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
     
     // Make it possible to pass in custom iOS 10+ notification options ([.badge, .sound, .alert, ...])
     @available(iOS 10.0, *)
-    @objc public func setCustomNotificationOptions(_ options:UNAuthorizationOptions) {
+    @objc public func setCustomNotificationOptions(_ options: UNAuthorizationOptions) {
         // Save the options for later
         self.notificationOptions = options
     }
     
     // Register for push notifications (called from AppDelegate.didFinishLaunchingWithOptions)
+    @available(iOSApplicationExtension, unavailable)
     @objc public func register(_ registrationHandler: @escaping (Error?, String) -> Void) {
         // Save the handler for later
         self.registrationHandler = registrationHandler
@@ -92,20 +100,25 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
         PushySwizzler.swizzleMethodImplementations(type(of: self.appDelegate), "application:didRegisterForRemoteNotificationsWithDeviceToken:")
         PushySwizzler.swizzleMethodImplementations(type(of: self.appDelegate), "application:didFailToRegisterForRemoteNotificationsWithError:")
         
-        // Run on main thread (access to UIApplication.shared.currentUserNotificationSettings)
-        DispatchQueue.main.async {
-            // Check if the user previously denied the push request dialog (and Pushy is registered)
-            if PushySettings.getString(PushySettings.pushyToken, userDefaultsOnly: true) != nil && UIApplication.shared.currentUserNotificationSettings?.types == [] && !self.ignorePushPermissionDenial {
-                Pushy.shared?.registrationHandler?(PushyRegistrationException.Error("Please enable push notifications for this app in the iOS settings.", "PUSH_PERMISSION_DENIED"), "")
-                return
-            }
-        
-            // Request an APNs token from Apple
-            self.requestAPNsToken(self.application)
+        // Check if the user previously denied the push request dialog (and Pushy is registered)
+        if PushySettings.getString(PushySettings.pushyToken, userDefaultsOnly: true) != nil && UIApplication.shared.currentUserNotificationSettings?.types == [] && !self.ignorePushPermissionDenial {
+            Pushy.shared?.registrationHandler?(PushyRegistrationException.Error("Please enable push notifications for this app in the iOS settings.", "PUSH_PERMISSION_DENIED"), "")
+            return
         }
+        
+       
+        // Request an APNs token from Apple
+        self.requestAPNsToken(self.application)
+    }
+    
+    // Unregister from push notifications
+    @objc public func unregister() {
+        // Clear backend-persisted APNs token
+        self.updateApnsToken(nil)
     }
     
     // Backwards-compatible method for requesting an APNs token from Apple
+    @available(iOSApplicationExtension, unavailable)
     private func requestAPNsToken(_ application: UIApplication) {
         // iOS 10+ support
         if #available(iOS 10, *) {
@@ -124,18 +137,20 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
                     return
                 }
                 
-                // Back to main thread, register with APNs
-                DispatchQueue.main.async {
-                    application.registerForRemoteNotifications()
+                // APNs enabled? (defaults to true)
+                if (PushySettings.getBoolean(PushySettings.pushyApns, true)) {
+                    // Back to main thread, register with APNs
+                    DispatchQueue.main.async {
+                        application.registerForRemoteNotifications()
+                    }
+                }
+                else {
+                    // No APNs (Local Push Connectivity only, iOS 14+)
+                    Pushy.shared?.registerPushyDevice(apnsToken: nil)
                 }
             }
         }
-            // iOS 9 support
-        else if #available(iOS 9, *) {
-            UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.badge, .sound, .alert], categories: nil))
-            UIApplication.shared.registerForRemoteNotifications()
-        }
-            // iOS 8 support
+            // iOS 8 & 9 support
         else if #available(iOS 8, *) {
             UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.badge, .sound, .alert], categories: nil))
             UIApplication.shared.registerForRemoteNotifications()
@@ -156,7 +171,7 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
     }
     
     // Converts an APNs token to Pushy device token
-    private func registerPushyDevice(apnsToken: String) {
+    private func registerPushyDevice(apnsToken: String?) {
         // Attempt to fetch persisted Pushy token
         let token = PushySettings.getString(PushySettings.pushyToken)
         
@@ -180,6 +195,14 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
                 return self.createNewDevice(apnsToken)
             }
             
+            // If APNs disabled, no need to keep track of token changes
+            if (!PushySettings.getBoolean(PushySettings.pushyApns, true)) {
+                // Registration success
+                self.registrationHandler?(nil, token!)
+                return
+            }
+            
+            // Check if APNs token changed
             // Get previously-stored APNs token
             if let previousApnsToken = PushySettings.getString(PushySettings.apnsToken) {
                 // Token changed?
@@ -200,7 +223,7 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
     }
     
     // Register a new Pushy device
-    private func createNewDevice(_ apnsToken:String) {
+    private func createNewDevice(_ apnsToken:String?) {
         // Fetch app bundle ID
         let bundleId = Bundle.main.bundleIdentifier
         
@@ -217,7 +240,7 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
         let pushEnvironment = PushyEnvironment.getEnvironmentString()
         
         // Prepare /register API post data
-        var params: [String:Any] = ["platform": "ios", "pushToken": apnsToken, "pushEnvironment": pushEnvironment, "pushBundle": appBundleId ]
+        var params: [String:Any] = ["platform": "ios", "pushToken": apnsToken as Any, "pushEnvironment": pushEnvironment, "pushBundle": appBundleId ]
         
         // Authenticate using Bundle ID by default
         if appId == nil {
@@ -257,7 +280,7 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
     }
     
     // Update remote APNs token
-    private func updateApnsToken(_ apnsToken: String) {
+    private func updateApnsToken(_ apnsToken: String?) {
         // Load device token & auth
         guard let pushyToken = PushySettings.getString(PushySettings.pushyToken), let pushyTokenAuth = PushySettings.getString(PushySettings.pushyTokenAuth) else {
             return
@@ -436,6 +459,44 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
         }
     }
     
+    public func invokeNotificationHandler(_ userInfo: [AnyHashable : Any], _ completionHandler: @escaping ((UIBackgroundFetchResult) -> Void)) {
+        // Avoid invoking handler twice for same payload
+        if (isDuplicateNotification(userInfo)) {
+            return print("Ignoring duplicate notification")
+        }
+        
+        // Call the incoming notification handler
+        Pushy.shared?.notificationHandler?(userInfo, completionHandler)
+    }
+    
+    // Checks whether the notification was already received through a different gateway
+    private func isDuplicateNotification(_ payload: [AnyHashable : Any]) -> Bool {
+        // Skip this check if iOS 14 Local Push Connectivity has not been configured
+        if (!PushySettings.getBoolean(PushySettings.pushyLocalPushConnectivity, false)) {
+            return false
+        }
+        
+        // Unwrap push notification ID
+        guard let pushId = payload["_pushyId"] as? String else {
+            // If it wasn't passed in, we can't check if it was already received
+            return false
+        }
+        
+        // Prepare UserDefaults setting key
+        let key:String = "_pushyIdReceived:" + pushId
+        
+        // Check if this key exists (meaning the push was already received)
+        if PushySettings.getBoolean(key, false) {
+            return true
+        }
+        
+        // If we're here, it's the first time encountering this push notification
+        PushySettings.setBoolean(key, true)
+        
+        // Return false so the notification gets processed
+        return false
+    }
+    
     // Support for Pushy Enterprise
     @objc public func setEnterpriseConfig(apiEndpoint: String?) {
         // If nil, clear persisted Pushy Enterprise API endpoint
@@ -466,6 +527,25 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
         PushySettings.setString(PushySettings.pushyEnterpriseApi, endpoint)
     }
     
+    // Support for static IP config / proxy endpoint
+    @objc public func setProxyEndpoint(proxyEndpoint: String?) {
+        // If nil, clear persisted proxy endpoint
+        if (proxyEndpoint == nil) {
+            return PushySettings.setString(PushySettings.pushyProxyEndpoint, nil)
+        }
+        
+        // Mutable variable
+        var endpoint = proxyEndpoint!
+        
+        // Strip trailing slash
+        if endpoint.hasSuffix("/") {
+            endpoint = String(endpoint.prefix(endpoint.count - 1))
+        }
+        
+        // Persist proxy endpoint
+        PushySettings.setString(PushySettings.pushyProxyEndpoint, endpoint)
+    }
+    
     // Support for Pushy App ID authentication instead of Bundle ID-based auth
     @objc public func setAppId(_ appId: String?) {
         // Fetch previous App ID
@@ -490,12 +570,22 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
     
     // Support for silent/foreground notifications without push permission consent (defaults to off)
     @objc public func toggleIgnorePushPermissionDenial(_ value: Bool) {
-        self.ignorePushPermissionDenial = value;
+        self.ignorePushPermissionDenial = value
     }
     
     // Support for toggling in-app notification banner (defaults to off)
     @objc public func toggleInAppBanner(_ value: Bool) {
         PushySettings.setBoolean(PushySettings.pushyInAppBanner, value)
+    }
+    
+    // Support for toggling APNs (defaults to on)
+    @objc public func toggleAPNs(_ value: Bool) {
+        PushySettings.setBoolean(PushySettings.pushyApns, value)
+    }
+    
+    // Support for toggling APNs connectivity check (defaults to on)
+    @objc public func toggleAPNsConnectivityCheck(_ value: Bool) {
+        PushySettings.setBoolean(PushySettings.pushyApnsConnectivityCheck, value)
     }
     
     // Support for toggling AppDelegate method swizzling (defaults to on)
@@ -504,6 +594,7 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
     }
     
     // Device registration check
+    @available(iOSApplicationExtension, unavailable)
     @objc public func isRegistered() -> Bool {
         // Check if APNs is registered
         if !UIApplication.shared.isRegisteredForRemoteNotifications {
@@ -520,22 +611,41 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
             return false
         }
         
+        // Check if Pushy.unregister() was called and APNs token was cleared
+        if (PushySettings.getString(PushySettings.apnsToken) == nil) {
+            return false
+        }
+        
         // Fallback to true
         return true
     }
     
     // API endpoint getter function
     @objc public func getApiEndpoint() -> String {
+        // Check for a configured proxy endpoint
+        let proxyEndpoint = PushySettings.getString(PushySettings.pushyProxyEndpoint)
+        
+        // Return proxy endpoint if not nil
+        if proxyEndpoint != nil {
+            return "https://" + proxyEndpoint!
+        }
+    
         // Check for a configured enterprise API endpoint
         let enterpriseApiEndpoint = PushySettings.getString(PushySettings.pushyEnterpriseApi)
         
-        // Default to public Pushy API if missing
-        if enterpriseApiEndpoint == nil {
-            return PushyConfig.apiBaseUrl
+        // Return enterprise endpoint if not nil
+        if enterpriseApiEndpoint != nil {
+            return enterpriseApiEndpoint!
         }
         
-        // Return enterprise endpoint
-        return enterpriseApiEndpoint!
+        // Default to public Pushy API endpoint if both proxy and enterprise endpoints are nil
+        return PushyConfig.apiBaseUrl
+    }
+    
+    // APNs token getter function
+    @objc public func getAPNsToken() -> String? {
+        // Return stored APNs token (may be nil if called before successful invocation of pushy.register())
+        return PushySettings.getString(PushySettings.apnsToken)
     }
     
     // APNs failed to register the device for push notifications
@@ -552,7 +662,7 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
             Pushy.shared?.notificationClickListener?(userInfo)
         } else {
             // Call the incoming notification handler
-            Pushy.shared?.notificationHandler?(userInfo, {(UIBackgroundFetchResult) in})
+            Pushy.shared?.invokeNotificationHandler(userInfo, {(UIBackgroundFetchResult) in})
         }
     }
     
@@ -567,7 +677,7 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
             completionHandler(UIBackgroundFetchResult.newData)
         } else {
             // Call the incoming notification handler
-            Pushy.shared?.notificationHandler?(userInfo, completionHandler)
+            Pushy.shared?.invokeNotificationHandler(userInfo, completionHandler)
         }
     }
 }
