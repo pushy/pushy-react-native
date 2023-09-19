@@ -199,6 +199,17 @@ RCT_EXPORT_METHOD(isRegistered:(RCTPromiseResolveBlock)resolve rejecter:(RCTProm
     resolve([NSNumber numberWithBool:isRegistered]);
 }
 
+RCT_EXPORT_METHOD(setProxyEndpoint:(NSString *)proxyEndpoint)
+{
+    // Empty endpoint?
+    if ([proxyEndpoint length] == 0) {
+        proxyEndpoint = nil;
+    }
+    
+    // Set proxy endpoint
+    [[self getPushyInstance] setProxyEndpointWithProxyEndpoint:proxyEndpoint];
+}
+
 RCT_EXPORT_METHOD(setEnterpriseConfig:(NSString *)apiEndpoint mqttEndpoint:(NSString *)mqttEndpoint)
 {
     // Empty endpoint?
