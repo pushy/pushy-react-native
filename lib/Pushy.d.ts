@@ -74,6 +74,15 @@ declare module 'pushy-react-native' {
     unsubscribe(topic: string): Promise<void>;
 
     /**
+     * Android specific.
+     *
+     * Toggle FCM fallback
+     *
+     * @param enabled A boolean indicating whether the FCM fallback should be enabled.
+     */
+    toggleFCM(enabled: boolean): void;
+
+    /**
      * iOS specific.
      *
      * Toggle the In-App Banner.
