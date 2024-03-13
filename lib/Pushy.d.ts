@@ -37,7 +37,7 @@ declare module 'pushy-react-native' {
      *
      * @param callback This function will be invoked when a new push notification arrives.
      */
-    setNotificationListener(callback: (data: string | object) => void): void;
+    setNotificationListener(callback: (data: string | object) => Promise<void>): void;
 
     /**
      * Set up the notification click listener.
