@@ -174,9 +174,10 @@ public class Pushy : NSObject, UNUserNotificationCenterDelegate {
     private func registerPushyDevice(apnsToken: String?) {
         // Attempt to fetch persisted Pushy token
         let token = PushySettings.getString(PushySettings.pushyToken)
+        let auth = PushySettings.getString(PushySettings.pushyTokenAuth)
         
         // First time?
-        if token == nil {
+        if token == nil || auth == nil {
             // Create a new Pushy device
             return createNewDevice(apnsToken)
         }
