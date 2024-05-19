@@ -136,6 +136,12 @@ RCT_EXPORT_METHOD(register:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseR
     });
 }
 
+RCT_EXPORT_METHOD(toggleIgnorePushPermissionDenial:(BOOL *)toggle)
+{
+    // Enable/disable ignoring push permission denial
+    [[self getPushyInstance] toggleIgnorePushPermissionDenial:toggle];
+}
+
 RCT_EXPORT_METHOD(toggleInAppBanner:(BOOL *)toggle)
 {
     // Run on main thread

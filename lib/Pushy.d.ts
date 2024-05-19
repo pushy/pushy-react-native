@@ -94,6 +94,15 @@ declare module 'pushy-react-native' {
     /**
      * iOS specific.
      *
+     * Toggle ignoring push permission denial
+     *
+     * @param enabled A boolean indicating whether an error should not be thrown when the push permission is denied by the user.
+     */
+    toggleIgnorePushPermissionDenial(enabled: boolean): void;
+
+    /**
+     * iOS specific.
+     *
      * By default, the SDK will use method swizzling to hook into the iOS AppDelegate's APNs callbacks.
      * You can disable method swizzling by calling this method.
      *
