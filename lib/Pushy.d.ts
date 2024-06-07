@@ -130,6 +130,17 @@ declare module 'pushy-react-native' {
      */
     setNotificationIcon(icon: string): void;
 
+    /**
+     * Android specific.
+     *
+     * Enables foreground service mode. The SDK will create a foreground service that 
+     * the Android OS will never terminate, which will ensure notification delivery in 
+     * the background and low memory state.
+     *
+     * @param toggle A boolean indicating whether foreground service mode should be enabled.
+     */
+    toggleForegroundService(enabled: boolean): void;
+
     setEnterpriseConfig(apiEndoint: string, mqttEndpoint: string): void;
   }
 
