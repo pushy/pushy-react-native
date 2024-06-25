@@ -10,6 +10,11 @@ import Foundation
 
 class PushyEnvironment : NSObject {
     static func getEnvironmentString() -> String {
+        // Support for iOS Simulator (Apple Silicon M1, M2, and T2 Macs)
+        #if targetEnvironment(simulator)
+            return "development"
+        #endif
+        
         // Get embedded provision dictionary
         if let mobileProvision = getMobileProvision() {
             // Get entitlements dictionary
