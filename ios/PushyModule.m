@@ -136,13 +136,13 @@ RCT_EXPORT_METHOD(register:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseR
     });
 }
 
-RCT_EXPORT_METHOD(toggleIgnorePushPermissionDenial:(BOOL *)toggle)
+RCT_EXPORT_METHOD(toggleIgnorePushPermissionDenial:(BOOL)toggle)
 {
     // Enable/disable ignoring push permission denial
     [[self getPushyInstance] toggleIgnorePushPermissionDenial:toggle];
 }
 
-RCT_EXPORT_METHOD(toggleInAppBanner:(BOOL *)toggle)
+RCT_EXPORT_METHOD(toggleInAppBanner:(BOOL)toggle)
 {
     // Run on main thread
     dispatch_sync(dispatch_get_main_queue(), ^{
@@ -158,7 +158,7 @@ RCT_EXPORT_METHOD(toggleInAppBanner:(BOOL *)toggle)
 }
 
 
-RCT_EXPORT_METHOD(toggleMethodSwizzling:(BOOL *)toggle)
+RCT_EXPORT_METHOD(toggleMethodSwizzling:(BOOL)toggle)
 {
     // Enable/disable AppDelegate method swizzling
     [[self getPushyInstance] toggleMethodSwizzling:toggle];
