@@ -22,6 +22,6 @@ Pod::Spec.new do |s|
   # https://github.com/facebook/react-native/releases/tag/v0.13.0
   s.dependency 'React', '>= 0.13.0', '< 1.0.0'
 
-  # MQTT dependency for Local Push Connectivity
-  s.dependency 'CocoaMQTT', '2.1.0'
+  # Pushy iOS SDK
+  s.dependency 'Pushy', '1.0.54'
 end
