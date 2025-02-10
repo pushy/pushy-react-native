@@ -23,5 +23,5 @@ Pod::Spec.new do |s|
   s.dependency 'React', '>= 0.13.0', '< 1.0.0'
 
   # Pushy iOS SDK
-  s.dependency 'Pushy', '1.0.54'
+  s.dependency 'Pushy', '1.0.56'
 end
