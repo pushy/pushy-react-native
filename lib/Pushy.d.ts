@@ -106,9 +106,31 @@ declare module 'pushy-react-native' {
      * By default, the SDK will use method swizzling to hook into the iOS AppDelegate's APNs callbacks.
      * You can disable method swizzling by calling this method.
      *
-     * @param toggle A boolean indicating whether method swizzling should be enabled.
+     * @param enabled A boolean indicating whether method swizzling should be enabled.
      */
     toggleMethodSwizzling(enabled: boolean): void;
+
+    /**
+     * iOS specific.
+     *
+     * By default, the SDK will register for notifications with the Apple Push Notification Service.
+     * This can be disabled for on-premises Pushy Enterprise deployments making use of Local Push Connectivity to deliver notifications.
+     *
+     * @param enabled A boolean indicating whether APNs integration should be enabled.
+     */
+    toggleAPNs(enabled: boolean): void;
+
+    /**
+     * iOS specific.
+     *
+     * On-premises Pushy Enterprise customers can use this method to enable Local Push Connectivity.
+     *
+     * @param endpoint The Pushy Enterprise deployment hostname.
+     * @param port The Pushy Enterprise deployment MQTTS port number.
+     * @param keepAlive The desired connection keep alive interval in seconds (300 is recommended).
+     * @param ssids A string array of valid Wi-FI SSIDs that have access to the on-premises Pushy Enterprise deployment.
+     */
+    setLocalPushConnectivityConfig(endpint: string, port: number, keepAlive: number, ssids: [String]): void;
 
     /**
      * iOS specific.
@@ -141,6 +163,12 @@ declare module 'pushy-react-native' {
      */
     toggleForegroundService(enabled: boolean): void;
 
+    /**
+     * Pushy Enterprise customers can use this method to enable Pushy Enterprise integration.
+     *
+     * @param apiEndpoint The Pushy Enterprise API hostname (string).
+     * @param mqttEndpoint The Pushy Enterprise MQTTS hostname (string).
+     */
     setEnterpriseConfig(apiEndoint: string, mqttEndpoint: string): void;
   }
 

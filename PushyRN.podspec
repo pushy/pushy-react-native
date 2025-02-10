@@ -11,9 +11,9 @@ Pod::Spec.new do |s|
   s.author          = package['author']
   s.license         = package['license']
 
-  s.platform       = :ios, "8.0"
+  s.platform       = :ios, "9.0"
   s.source          = { :git => 'https://github.com/pushy/pushy-react-native.git', :tag => s.version }
-  s.source_files    = '**/*.{h,m,swift}'
+  s.source_files    = '**/*.{h,c,m,swift}'
   s.requires_arc    = true
   s.swift_version   = '4.2'
 
@@ -21,4 +21,7 @@ Pod::Spec.new do |s|
   # Let's ensure we have version 0.13.0 or greater to avoid a cocoapods issue noted in React Native's release notes:
   # https://github.com/facebook/react-native/releases/tag/v0.13.0
   s.dependency 'React', '>= 0.13.0', '< 1.0.0'
+
+  # MQTT dependency for Local Push Connectivity
+  s.dependency 'CocoaMQTT', '2.1.0'
 end

@@ -46,6 +46,14 @@ NSDictionary *coldStartNotification;
     }
 }
 
+RCT_EXPORT_METHOD(setLocalPushConnectivityConfig:(NSString * _Nullable)endpoint port:(NSNumber * _Nullable)port keepAlive:(NSNumber * _Nullable)keepAlive ssids:(NSArray<NSString *> * _Nullable)ssids) {
+    // iOS 14 and newer
+    if (@available(iOS 14.0, *)) {
+        // Configure Local Push Connectivity
+        [PushyMQTT setLocalPushConnectivityConfigWithEndpoint: endpoint port: port keepAlive: keepAlive ssids: ssids];
+    }
+}
+
 RCT_EXPORT_METHOD(listen)
 {
     // Run on main thread
@@ -140,6 +148,12 @@ RCT_EXPORT_METHOD(toggleIgnorePushPermissionDenial:(BOOL)toggle)
 {
     // Enable/disable ignoring push permission denial
     [[self getPushyInstance] toggleIgnorePushPermissionDenial:toggle];
+}
+
+RCT_EXPORT_METHOD(toggleAPNs:(BOOL)value)
+{
+    // Toggle APNs for Local Push Connectivity support
+    [[self getPushyInstance] toggleAPNs:value];
 }
 
 RCT_EXPORT_METHOD(toggleInAppBanner:(BOOL)toggle)
