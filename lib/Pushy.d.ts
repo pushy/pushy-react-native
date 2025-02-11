@@ -31,6 +31,11 @@ declare module 'pushy-react-native' {
     register(): Promise<string>;
 
     /**
+     * Unregister the device from receiving notifications.
+     */
+    unregister(): void;
+
+    /**
      * Set up the notification listener.
      *
      * This method can only be called once for your entire app lifecycle, therefore, it should not be invoked within a Component lifecycle event.

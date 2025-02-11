@@ -146,6 +146,12 @@ RCT_EXPORT_METHOD(toggleIgnorePushPermissionDenial:(BOOL)toggle)
     [[self getPushyInstance] toggleIgnorePushPermissionDenial:toggle];
 }
 
+RCT_EXPORT_METHOD(unregister)
+{
+    // Unregister the device from receiving notifications
+    [[self getPushyInstance] unregister];
+}
+
 RCT_EXPORT_METHOD(toggleAPNs:(BOOL)value)
 {
     // Toggle APNs for Local Push Connectivity support
