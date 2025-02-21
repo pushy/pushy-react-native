@@ -1,4 +1,4 @@
-package me.pushy.sdk;
+package me.pushy.sdk.react;
 
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
