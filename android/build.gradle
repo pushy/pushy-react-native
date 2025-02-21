@@ -1,0 +1,18 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    namespace "me.pushy.sdk.react"
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+    }
+}
+
+dependencies {
+    implementation "com.facebook.react:react-native:+"
+
+    // Pushy SDK for Android
+    implementation 'me.pushy:sdk:1.0.121'
+}
