@@ -5,6 +5,7 @@ android {
     namespace "me.pushy.sdk.react"
 
     defaultConfig {
+        consumerProguardFiles 'proguard-rules.pro'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
     }
