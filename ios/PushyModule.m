@@ -4,6 +4,17 @@
 @import Pushy;
 @implementation PushyModule
 
++ (void)initialize {
+    // Module initialized?
+    if (self == [PushyModule class]) {
+        // Add observer on UIApplicationDidFinishLaunchingNotification to catch cold start notification click
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(applicationDidFinishLaunching:)
+                                                     name:UIApplicationDidFinishLaunchingNotification
+                                                   object:nil];
+  }
+}
+
 RCT_EXPORT_MODULE();
 
 Pushy *pushy;
@@ -30,7 +41,7 @@ NSDictionary *coldStartNotification;
 }
 
 + (void)didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Got options?
+    // Old method (leave for backward compatibiliy)
     if (launchOptions != nil) {
         // Get remote notification (may be nil)
         NSDictionary *remoteNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
@@ -39,6 +50,15 @@ NSDictionary *coldStartNotification;
         if (remoteNotification != nil) {
             coldStartNotification = remoteNotification;
         }
+    }
+}
+
+// Observer on UIApplicationDidFinishLaunchingNotification to catch cold start notification click
++ (void)applicationDidFinishLaunching:(NSNotification *)notification {
+    // Save cold-start notification for later when Pushy.listen() is called
+    if (notification != nil && notification.userInfo != nil) {
+        // Extract notification payload from userInfo dictionary
+        coldStartNotification = [notification.userInfo objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
     }
 }
 
