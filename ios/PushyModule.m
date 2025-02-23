@@ -62,6 +62,9 @@ NSDictionary *coldStartNotification;
     }
 }
 
+// Check if PushyMQTT class is available (depends on CocoaMQTT)
+#if __has_include("MGCDAsyncSocket.h")
+
 RCT_EXPORT_METHOD(setLocalPushConnectivityConfig:(NSString * _Nullable)endpoint port:(NSNumber * _Nullable)port keepAlive:(NSNumber * _Nullable)keepAlive ssids:(NSArray<NSString *> * _Nullable)ssids) {
     // iOS 14 and newer
     if (@available(iOS 14.0, *)) {
@@ -69,6 +72,8 @@ RCT_EXPORT_METHOD(setLocalPushConnectivityConfig:(NSString * _Nullable)endpoint 
         [PushyMQTT setLocalPushConnectivityConfigWithEndpoint: endpoint port: port keepAlive: keepAlive ssids: ssids];
     }
 }
+
+#endif
 
 RCT_EXPORT_METHOD(listen)
 {
