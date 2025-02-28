@@ -32,12 +32,10 @@ public class PushyNotificationService extends HeadlessJsTaskService {
         return ((ReactApplication) getApplicationContext()).getReactNativeHost();
     }
 
-    @Override
     protected ReactContext getReactContext() {
         return Objects.requireNonNull(((ReactApplication) getApplicationContext()).getReactHost()).getCurrentReactContext();
     }
 
-    @Override
     protected ReactHost getReactHost() {
         return ((ReactApplication) getApplicationContext()).getReactHost();
     }
