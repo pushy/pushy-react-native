@@ -65,7 +65,7 @@ NSDictionary *coldStartNotification;
 // Check if PushyMQTT class is available (depends on CocoaMQTT)
 #if __has_include("MGCDAsyncSocket.h")
 
-RCT_EXPORT_METHOD(setLocalPushConnectivityConfig:(NSString * _Nullable)endpoint port:(NSNumber * _Nullable)port keepAlive:(NSNumber * _Nullable)keepAlive ssids:(NSArray<NSString *> * _Nullable)ssids) {
+RCT_EXPORT_METHOD(setLocalPushConnectivityConfig:(nonnull NSString *)endpoint port:(nonnull NSNumber *)port keepAlive:(nonnull NSNumber *)keepAlive ssids:(nonnull NSArray<NSString *> *)ssids) {
     // iOS 14 and newer
     if (@available(iOS 14.0, *)) {
         // Configure Local Push Connectivity
