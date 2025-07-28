@@ -102,8 +102,22 @@ public class PushyModule extends ReactContextBaseJavaModule implements ActivityE
         // Call Pushy.listen() to establish a connection
         Pushy.listen(getReactApplicationContext());
 
-        // If no intent, no notification clicked
-        if (getReactApplicationContext() == null || getReactApplicationContext().getCurrentActivity() == null || getReactApplicationContext().getCurrentActivity().getIntent() == null) {
+        // Keep track of current time
+        long startTime = System.currentTimeMillis();
+
+        // Wait for application and activity context to become available (up to 10 seconds)
+        while ((getReactApplicationContext() == null || getReactApplicationContext().getCurrentActivity() == null)
+                && System.currentTimeMillis() - startTime < 10000) {
+            try {
+                // Sleep 100ms
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+
+        // Activity has no launch intent?
+        if (getReactApplicationContext().getCurrentActivity().getIntent() == null) {
             return;
         }
 
