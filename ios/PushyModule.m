@@ -279,7 +279,7 @@ RCT_EXPORT_METHOD(setAppId:(NSString *)appId)
     [[self getPushyInstance] setAppId:appId];
 }
 
-RCT_EXPORT_METHOD(notify:(NSString *)title message:(NSString *)message payload:(id *)payload)
+RCT_EXPORT_METHOD(notify:(NSString *)title message:(NSString *)message payload:(NSObject *)payload)
 {
     // Run on main thread
     dispatch_sync(dispatch_get_main_queue(), ^{

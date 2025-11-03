@@ -62,7 +62,7 @@ declare module 'pushy-react-native' {
      * @param message The notification message.
      * @param data The payload object.
      */
-    notify(title: string, message: string, data: object): void;
+    notify(title: string, message: string, data: string | object): void;
 
     /**
      * Subscribe the user to a topic.
